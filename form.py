@@ -12,6 +12,7 @@ class Form (QWidget):
 		layout.addWidget(label1, 0, 0)
 		group=QButtonGroup (self)
 		self.option1=QRadioButton ('3 стороны')
+		self.option1.setChecked  (True)
 		group.addButton (self.option1)
 		layout.addWidget(self.option1, 1, 0)
 		self.option2=QRadioButton ('2 стороны и угол')
@@ -24,8 +25,11 @@ class Form (QWidget):
 		layout.addWidget(label2, 0, 1)
 
 		self.spinbox1=QDoubleSpinBox (self)
+		self.spinbox1.setRange(1,179.99)
 		self.spinbox2=QDoubleSpinBox (self)
+		self.spinbox2.setRange(1,179.99)
 		self.spinbox3=QDoubleSpinBox (self)
+		self.spinbox3.setRange(1,179.99)
 
 		layout.addWidget(self.spinbox1, 1, 1)
 		layout.addWidget(self.spinbox2, 2, 1)
@@ -46,16 +50,23 @@ class Form (QWidget):
 			c=self.spinbox3.value()
 			cosA=(b*b+c*c-a*a)/(2*b*c)
 			print (cosA)
-			cosB=(a*a+c*c-b*b)/(2*a*c)
-			print (cosB)
-			self.draw=Draw(a,b,c,cosA,cosB)
-			self.draw.show ()
-			self.draw.activateWindow()
+		elif self.option2.isChecked():
+			b=self.spinbox1.value()
+			c=self.spinbox2.value()
+			cosA=math.cos(self.spinbox3.value()/180*math.pi)
 		elif self.option3.isChecked():
 			c=self.spinbox1.value()
 			cosA=math.cos(self.spinbox2.value()/180*math.pi)
 			cosB=math.cos(self.spinbox3.value()/180*math.pi)
-			print (cosA, cosB)
+			sinB=math.sqrt(1-cosB*cosB)
+			print (cosA)
+			degC=180-self.spinbox2.value()-self.spinbox3.value()
+			sinC=math.sin (degC/180*math.pi)
+			b=c/sinC*sinB
+		self.draw=Draw(b,c,cosA)
+		self.draw.show ()
+		self.draw.activateWindow()
+
 
 def main ():
 	app=QApplication (sys.argv)

@@ -4,13 +4,14 @@ from PyQt6.QtGui import QPainter, QBrush
 from PyQt6.QtWidgets import QApplication, QWidget
 
 class Draw (QWidget):
-	def __init__(self, a, b, c, cosA, cosB):
+	def __init__(self, b, c, cosA):
 		super ().__init__()
-		self.a=a
+		#self.a=a
 		self.b=b
 		self.c=c
 		self.cosA=cosA
-		self.cosB=cosB
+		
+		self.setWindowTitle ('Окно вывода — TriangleMaster')
 	
 	def paintEvent (self, event):
 		painter=QPainter (self)
@@ -26,13 +27,13 @@ class Draw (QWidget):
 		C=QPointF (b*self.cosA, b*sinA)
 
 		painter.drawConvexPolygon ([A,B,C])
-		#painter.drawPoint(A)
-		#painter.drawPoint(B)
-		#painter.drawPoint(C)
-		#painter.end()
+		painter.drawText (-5,-5,"A")
+		painter.drawText (c,-5,"B")
+		painter.drawText (int (b*self.cosA+5), int (b*sinA+10),"C")
+
 
 if __name__ == '__main__':
 	app = QApplication([])
-	draw = Draw(1, 1, 1, 0.5, 0.5)
+	draw = Draw(1, 1, 0.5)
 	draw.show()
 	app.exec()
