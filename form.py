@@ -2,7 +2,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout, QRadioButton, QWidget, QDoubleSpinBox, QApplication, QButtonGroup, QSizePolicy
 import sys
 import math
-from draw import Draw
+from draw import Window
 
 class Form (QWidget):
 	def __init__(self):
@@ -48,8 +48,7 @@ class Form (QWidget):
 			a=self.spinbox1.value()
 			b=self.spinbox2.value()
 			c=self.spinbox3.value()
-			cosA=(b*b+c*c-a*a)/(2*b*c)
-			print (cosA)
+			cosA=(b*b+c*c-a*a)/(2*b*c)			
 		elif self.option2.isChecked():
 			b=self.spinbox1.value()
 			c=self.spinbox2.value()
@@ -59,13 +58,14 @@ class Form (QWidget):
 			cosA=math.cos(self.spinbox2.value()/180*math.pi)
 			cosB=math.cos(self.spinbox3.value()/180*math.pi)
 			sinB=math.sqrt(1-cosB*cosB)
-			print (cosA)
+			
 			degC=180-self.spinbox2.value()-self.spinbox3.value()
 			sinC=math.sin (degC/180*math.pi)
 			b=c/sinC*sinB
-		self.draw=Draw(b,c,cosA)
-		self.draw.show ()
-		self.draw.activateWindow()
+		self.window=Window(b,c,cosA)
+		self.window.resize(800, 400)
+		self.window.show ()
+		self.window.activateWindow()
 
 
 def main ():
