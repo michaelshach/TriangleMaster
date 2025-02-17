@@ -1,7 +1,7 @@
 import math
 from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QTransform, QFont
-from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QMainWindow, QToolBar, QPushButton
 
 class Triangle:
 	def __init__(self, b, c, cosA):
@@ -40,25 +40,36 @@ class Draw (QWidget):
 	def __init__(self, t: Triangle):
 		super ().__init__()
 		self.t = t
-	
+		self.scaleFactor = 400 / t.c
+		self.showMedians=False
+
 	def paintEvent (self, event):
 		t = self.t
 		painter=QPainter (self)
-		scaleFactor = 400 / t.c
 		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-		transform = QTransform(scaleFactor, 0, 0, scaleFactor, 80, 140)
+		transform = QTransform(self.scaleFactor, 0, 0, self.scaleFactor, 80, 140)
 		painter.setWorldTransform(transform)
 
 		pen = QPen()
 		pen.setWidth(2)
 		pen.setCosmetic(True)
 		painter.setPen(pen)
-
+		
 		A = QPointF (t.x1, t.y1)
 		B = QPointF (t.x2, t.y2)
 		C = QPointF (t.x3, t.y3)
 		painter.drawConvexPolygon ([A,B,C])
-
+		
+		# Медианы
+		if self.showMedians:
+			K=QPointF ((t.x2+t.x3)/2,(t.y2+t.y3)/2)
+			L=QPointF ((t.x1+t.x3)/2,(t.y1+t.y3)/2)
+			M=QPointF ((t.x1+t.x2)/2,(t.y1+t.y2)/2)
+			pen.setColor(QColor(255, 0, 0))
+			painter.setPen(pen)
+			painter.drawLine (A,K)
+			painter.drawLine (B,L)
+			painter.drawLine (C,M)
 		# Описанная окружность
 		pen.setColor(QColor(0, 255, 0))
 		painter.setPen(pen)
@@ -78,24 +89,35 @@ class Draw (QWidget):
 		painter.setFont(font)
 		transform = QTransform.fromTranslate(80, 140)
 		painter.setWorldTransform(transform)
-		x1 = t.x1 * scaleFactor
-		y1 = t.y1 * scaleFactor
-		x2 = t.x2 * scaleFactor
-		y2 = t.y2 * scaleFactor
-		x3 = t.x3 * scaleFactor
-		y3 = t.y3 * scaleFactor
+		x1 = t.x1 * self.scaleFactor
+		y1 = t.y1 * self.scaleFactor
+		x2 = t.x2 * self.scaleFactor
+		y2 = t.y2 * self.scaleFactor
+		x3 = t.x3 * self.scaleFactor
+		y3 = t.y3 * self.scaleFactor
 		painter.drawText(int(x1)-5, int(y1)-5, "A")
 		painter.drawText(int(x2), int(y2)-5, "B")
 		painter.drawText(int(x3)+5, int(y3)+12, "C")
+	
+	def wheelEvent(self, event):
+		self.scaleFactor *= (1.001 ** event.angleDelta().y())
+		self.repaint()
+
+	def toggleMedians (self, checked):
+		self.showMedians=checked
+		self.repaint ()
 
 class Window (QWidget):
+	
 	def __init__(self, b, c, cosA):
 		super ().__init__()
 		self.setWindowTitle('Окно вывода — TriangleMaster')
-		layout=QHBoxLayout (self)
+		vLayout = QVBoxLayout(self)
+		hLayout = QHBoxLayout()
+		vLayout.addLayout(hLayout)
 		t = Triangle(b, c, cosA)
 		draw=Draw (t)
-		layout.addWidget(draw, 2)
+		hLayout.addWidget(draw, 2)
 
 		text='<h1>О треугольнике</h1>'
 		text+='<h2>Стороны</h2>'
@@ -110,8 +132,17 @@ class Window (QWidget):
 		text+=f'S = {t.S:.3f}<br>'
 		text+=f'P = {t.a+t.b+t.c:.1f}'
 		label=QLabel(text,self)
-		layout.addWidget(label, 1, Qt.AlignmentFlag.AlignTop)
-		
+		hLayout.addWidget(label, 1, Qt.AlignmentFlag.AlignTop)
+		mediansButton=QPushButton ('Показать медианы')
+		mediansButton.setCheckable (True)
+		mediansButton.toggled.connect (draw.toggleMedians)
+		altitudesButton=QPushButton ('Показать высоты')
+		bisectorsButton=QPushButton ('Показать биссектрисы')
+		hLayout2=QHBoxLayout ()
+		hLayout2.addWidget(mediansButton)
+		hLayout2.addWidget(altitudesButton)
+		hLayout2.addWidget(bisectorsButton)
+		vLayout.addLayout (hLayout2)
 
 if __name__ == '__main__':
 	app = QApplication([])
