@@ -11,7 +11,8 @@ class Triangle:
 		self.cosA = cosA
 		self.a = a = math.sqrt(b*b+c*c-2*b*c*cosA)
 		self.sinA = sinA = math.sqrt (1-cosA*cosA)
-		self.cosB = (a*a+c*c-b*b)/(2*a*c)
+		self.cosB = cosB = (a*a+c*c-b*b)/(2*a*c)
+		self.sinB = math.sqrt (1-cosB*cosB)
 		self.cosC = (a*a+b*b-c*c)/(2*a*b)
 		self.p = p = (a+b+c)/2
 		self.S = S = math.sqrt(p*(p-a)*(p-b)*(p-c))
@@ -42,6 +43,7 @@ class Draw (QWidget):
 		self.t = t
 		self.scaleFactor = 400 / t.c
 		self.showMedians=False
+		self.showAltitudes=False
 
 	def paintEvent (self, event):
 		t = self.t
@@ -70,6 +72,18 @@ class Draw (QWidget):
 			painter.drawLine (A,K)
 			painter.drawLine (B,L)
 			painter.drawLine (C,M)
+			
+		# Высоты
+		if self.showAltitudes:
+			K=QPointF (t.x2-t.c*t.cosB*t.cosB,t.c*t.cosB*t.sinB)
+			L=QPointF (t.c*t.cosA*t.cosA,t.c*t.cosA*t.sinA)
+			M=QPointF (t.x3,0)
+			pen.setColor(QColor(Qt.GlobalColor.darkYellow))
+			painter.setPen(pen)
+			painter.drawLine (A,K)
+			painter.drawLine (B,L)
+			painter.drawLine (C,M)
+			
 		# Описанная окружность
 		pen.setColor(QColor(0, 255, 0))
 		painter.setPen(pen)
@@ -106,7 +120,11 @@ class Draw (QWidget):
 	def toggleMedians (self, checked):
 		self.showMedians=checked
 		self.repaint ()
-
+		
+	def toggleAltitudes (self, checked):
+		self.showAltitudes=checked
+		self.repaint ()
+		
 class Window (QWidget):
 	
 	def __init__(self, b, c, cosA):
@@ -137,6 +155,8 @@ class Window (QWidget):
 		mediansButton.setCheckable (True)
 		mediansButton.toggled.connect (draw.toggleMedians)
 		altitudesButton=QPushButton ('Показать высоты')
+		altitudesButton.setCheckable (True)
+		altitudesButton.toggled.connect (draw.toggleAltitudes)
 		bisectorsButton=QPushButton ('Показать биссектрисы')
 		hLayout2=QHBoxLayout ()
 		hLayout2.addWidget(mediansButton)
