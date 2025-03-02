@@ -44,6 +44,7 @@ class Draw (QWidget):
 		self.scaleFactor = 400 / t.c
 		self.showMedians=False
 		self.showAltitudes=False
+		self.showBisectors=False
 
 	def paintEvent (self, event):
 		t = self.t
@@ -79,6 +80,30 @@ class Draw (QWidget):
 			L=QPointF (t.c*t.cosA*t.cosA,t.c*t.cosA*t.sinA)
 			M=QPointF (t.x3,0)
 			pen.setColor(QColor(Qt.GlobalColor.darkYellow))
+			painter.setPen(pen)
+			painter.drawLine (A,K)
+			painter.drawLine (B,L)
+			painter.drawLine (C,M)
+			pen.setColor(QColor(Qt.GlobalColor.black))
+			pen.setStyle(Qt.PenStyle.DashLine)
+			painter.setPen(pen)
+			if t.cosA < 0:
+				painter.drawLine (A,M)
+				painter.drawLine (A,L)
+			if t.cosB < 0:
+				painter.drawLine (B,K)
+				painter.drawLine (B,M)
+			if t.cosC < 0:
+				painter.drawLine (C,K)
+				painter.drawLine (C,L)
+			pen.setStyle(Qt.PenStyle.SolidLine)
+			
+		# Биссектрисы
+		if self.showBisectors:
+			K=QPointF ((t.x2*t.b+t.x3*t.c)/(t.b+t.c),(t.y2*t.b+t.y3*t.c)/(t.b+t.c))
+			L=QPointF ((t.x1*t.a+t.x3*t.c)/(t.a+t.c),(t.y1*t.a+t.y3*t.c)/(t.a+t.c))
+			M=QPointF ((t.x1*t.a+t.x2*t.b)/(t.a+t.b),(t.y1*t.a+t.y2*t.b)/(t.a+t.b))
+			pen.setColor(QColor(Qt.GlobalColor.magenta))
 			painter.setPen(pen)
 			painter.drawLine (A,K)
 			painter.drawLine (B,L)
@@ -125,6 +150,10 @@ class Draw (QWidget):
 		self.showAltitudes=checked
 		self.repaint ()
 		
+	def toggleBisectors (self, checked):
+		self.showBisectors=checked
+		self.repaint()
+		
 class Window (QWidget):
 	
 	def __init__(self, b, c, cosA):
@@ -158,6 +187,8 @@ class Window (QWidget):
 		altitudesButton.setCheckable (True)
 		altitudesButton.toggled.connect (draw.toggleAltitudes)
 		bisectorsButton=QPushButton ('Показать биссектрисы')
+		bisectorsButton.setCheckable (True)
+		bisectorsButton.toggled.connect (draw.toggleBisectors)
 		hLayout2=QHBoxLayout ()
 		hLayout2.addWidget(mediansButton)
 		hLayout2.addWidget(altitudesButton)
