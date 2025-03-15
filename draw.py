@@ -3,6 +3,10 @@ from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QTransform, QFont
 from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QMainWindow, QToolBar, QPushButton
 
+def dist (p1,p2):
+	return math.sqrt ((p1.x()-p2.x())**2 + (p1.y()-p2.y())**2)
+
+
 class Triangle:
 	def __init__(self, b, c, cosA):
 		super ().__init__()
@@ -12,7 +16,7 @@ class Triangle:
 		self.a = a = math.sqrt(b*b+c*c-2*b*c*cosA)
 		self.sinA = sinA = math.sqrt (1-cosA*cosA)
 		self.cosB = cosB = (a*a+c*c-b*b)/(2*a*c)
-		self.sinB = math.sqrt (1-cosB*cosB)
+		self.sinB = sinB = math.sqrt (1-cosB*cosB)
 		self.cosC = (a*a+b*b-c*c)/(2*a*b)
 		self.p = p = (a+b+c)/2
 		self.S = S = math.sqrt(p*(p-a)*(p-b)*(p-c))
@@ -25,6 +29,10 @@ class Triangle:
 		self.x3 = x3 = b * self.cosA
 		self.y3 = y3 = b * sinA
 
+		self.A = QPointF (x1, y1)
+		self.B = QPointF (x2, y2)
+		self.C = QPointF (x3, y3)
+
 		# Описанная окружность
 		D = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
 		self.x_circ = x_circ = ((x1**2 + y1**2) * (y2 - y3) + (x2**2 + y2**2) * (y3 - y1) + (x3**2 + y3**2) * (y1 - y2)) / D
@@ -35,7 +43,21 @@ class Triangle:
 		self.x_in = (a * x1 + b * x2 + c * x3) / (a + b + c)
 		self.y_in = (a * y1 + b * y2 + c * y3) / (a + b + c)
 		self.R_in = S / p
+		
+		# Медианы
+		self.A1=QPointF ((x2+x3)/2,(y2+y3)/2)
+		self.B1=QPointF ((x1+x3)/2,(y1+y3)/2)
+		self.C1=QPointF ((x1+x2)/2,(y1+y2)/2)
 
+		# Высоты
+		self.A2=QPointF (x2-c*cosB*cosB,c*cosB*sinB)
+		self.B2=QPointF (c*cosA*cosA,c*cosA*sinA)
+		self.C2=QPointF (x3,0)
+		
+		# Биссектрисы
+		self.A3=QPointF ((x2*b+x3*c)/(b+c),(y2*b+y3*c)/(b+c))
+		self.B3=QPointF ((x1*a+x3*c)/(a+c),(y1*a+y3*c)/(a+c))
+		self.C3=QPointF ((x1*a+x2*b)/(a+b),(y1*a+y2*b)/(a+b))
 
 class Draw (QWidget):
 	def __init__(self, t: Triangle):
@@ -48,6 +70,7 @@ class Draw (QWidget):
 
 	def paintEvent (self, event):
 		t = self.t
+		A, B, C = t.A, t.B, t.C
 		painter=QPainter (self)
 		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 		transform = QTransform(self.scaleFactor, 0, 0, self.scaleFactor, 80, 140)
@@ -58,56 +81,44 @@ class Draw (QWidget):
 		pen.setCosmetic(True)
 		painter.setPen(pen)
 		
-		A = QPointF (t.x1, t.y1)
-		B = QPointF (t.x2, t.y2)
-		C = QPointF (t.x3, t.y3)
 		painter.drawConvexPolygon ([A,B,C])
 		
 		# Медианы
 		if self.showMedians:
-			K=QPointF ((t.x2+t.x3)/2,(t.y2+t.y3)/2)
-			L=QPointF ((t.x1+t.x3)/2,(t.y1+t.y3)/2)
-			M=QPointF ((t.x1+t.x2)/2,(t.y1+t.y2)/2)
 			pen.setColor(QColor(255, 0, 0))
 			painter.setPen(pen)
-			painter.drawLine (A,K)
-			painter.drawLine (B,L)
-			painter.drawLine (C,M)
+			painter.drawLine (A,t.A1)
+			painter.drawLine (B,t.B1)
+			painter.drawLine (C,t.C1)
 			
 		# Высоты
 		if self.showAltitudes:
-			K=QPointF (t.x2-t.c*t.cosB*t.cosB,t.c*t.cosB*t.sinB)
-			L=QPointF (t.c*t.cosA*t.cosA,t.c*t.cosA*t.sinA)
-			M=QPointF (t.x3,0)
 			pen.setColor(QColor(Qt.GlobalColor.darkYellow))
 			painter.setPen(pen)
-			painter.drawLine (A,K)
-			painter.drawLine (B,L)
-			painter.drawLine (C,M)
+			painter.drawLine (A,t.A2)
+			painter.drawLine (B,t.B2)
+			painter.drawLine (C,t.C2)
 			pen.setColor(QColor(Qt.GlobalColor.black))
 			pen.setStyle(Qt.PenStyle.DashLine)
 			painter.setPen(pen)
 			if t.cosA < 0:
-				painter.drawLine (A,M)
-				painter.drawLine (A,L)
+				painter.drawLine (A,t.B2)
+				painter.drawLine (A,t.C2)
 			if t.cosB < 0:
-				painter.drawLine (B,K)
-				painter.drawLine (B,M)
+				painter.drawLine (B,t.A2)
+				painter.drawLine (B,t.C2)
 			if t.cosC < 0:
-				painter.drawLine (C,K)
-				painter.drawLine (C,L)
+				painter.drawLine (C,t.A2)
+				painter.drawLine (C,t.B2)
 			pen.setStyle(Qt.PenStyle.SolidLine)
 			
 		# Биссектрисы
 		if self.showBisectors:
-			K=QPointF ((t.x2*t.b+t.x3*t.c)/(t.b+t.c),(t.y2*t.b+t.y3*t.c)/(t.b+t.c))
-			L=QPointF ((t.x1*t.a+t.x3*t.c)/(t.a+t.c),(t.y1*t.a+t.y3*t.c)/(t.a+t.c))
-			M=QPointF ((t.x1*t.a+t.x2*t.b)/(t.a+t.b),(t.y1*t.a+t.y2*t.b)/(t.a+t.b))
 			pen.setColor(QColor(Qt.GlobalColor.magenta))
 			painter.setPen(pen)
-			painter.drawLine (A,K)
-			painter.drawLine (B,L)
-			painter.drawLine (C,M)
+			painter.drawLine (A,t.A3)
+			painter.drawLine (B,t.B3)
+			painter.drawLine (C,t.C3)
 			
 		# Описанная окружность
 		pen.setColor(QColor(0, 255, 0))
@@ -166,18 +177,29 @@ class Window (QWidget):
 		draw=Draw (t)
 		hLayout.addWidget(draw, 2)
 
-		text='<h1>О треугольнике</h1>'
-		text+='<h2>Стороны</h2>'
+		text='<h3>Стороны</h3>'
 		text+=f'AB = {t.c:.1f}<br>'
 		text+=f'AC = {t.b:.1f}<br>'
 		text+=f'BC = {t.a:.1f}'
-		text+='<h2>Углы</h2>'
+		text+='<h3>Углы</h3>'
 		text+=f'∠A = {math.acos(t.cosA)/math.pi*180:.0f}°<br>'
 		text+=f'∠B = {math.acos(t.cosB)/math.pi*180:.0f}°<br>'
 		text+=f'∠C = {math.acos(t.cosC)/math.pi*180:.0f}°'
-		text+='<h2>Площадь и периметр</h2>'
+		text+='<h3>Площадь и периметр</h3>'
 		text+=f'S = {t.S:.3f}<br>'
 		text+=f'P = {t.a+t.b+t.c:.1f}'
+		text+='<h3>Медианы</h3>'
+		text+=f'AA<sub>1</sub> = {dist(t.A,t.A1):.3f}<br>'
+		text+=f'BB<sub>1</sub> = {dist(t.B,t.B1):.3f}<br>'
+		text+=f'CC<sub>1</sub> = {dist(t.C,t.C1):.3f}'
+		text+='<h3>Высоты</h3>'
+		text+=f'AA<sub>2</sub> = {dist(t.A,t.A2):.3f}<br>'
+		text+=f'BB<sub>2</sub> = {dist(t.B,t.B2):.3f}<br>'
+		text+=f'CC<sub>2</sub> = {dist(t.C,t.C2):.3f}'
+		text+='<h3>Биссектрисы</h3>'
+		text+=f'AA<sub>3</sub> = {dist(t.A,t.A3):.3f}<br>'
+		text+=f'BB<sub>3</sub> = {dist(t.B,t.B3):.3f}<br>'
+		text+=f'CC<sub>3</sub> = {dist(t.C,t.C3):.3f}'
 		label=QLabel(text,self)
 		hLayout.addWidget(label, 1, Qt.AlignmentFlag.AlignTop)
 		mediansButton=QPushButton ('Показать медианы')
