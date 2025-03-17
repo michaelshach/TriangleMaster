@@ -64,16 +64,21 @@ class Draw (QWidget):
 		super ().__init__()
 		self.t = t
 		self.scaleFactor = 400 / t.c
+		self.origScaleFactor = self.scaleFactor
 		self.showMedians=False
 		self.showAltitudes=False
 		self.showBisectors=False
+		self.mousePressed=False
+		self.mouseStartPosition=None
+		self.offsetX = 80
+		self.offsetY = 140
 
 	def paintEvent (self, event):
 		t = self.t
 		A, B, C = t.A, t.B, t.C
 		painter=QPainter (self)
 		painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-		transform = QTransform(self.scaleFactor, 0, 0, self.scaleFactor, 80, 140)
+		transform = QTransform(self.scaleFactor, 0, 0, self.scaleFactor, self.offsetX, self.offsetY)
 		painter.setWorldTransform(transform)
 
 		pen = QPen()
@@ -137,7 +142,7 @@ class Draw (QWidget):
 		painter.setPen(pen)
 		font = QFont("Sans", 14)
 		painter.setFont(font)
-		transform = QTransform.fromTranslate(80, 140)
+		transform = QTransform.fromTranslate(self.offsetX, self.offsetY)
 		painter.setWorldTransform(transform)
 		x1 = t.x1 * self.scaleFactor
 		y1 = t.y1 * self.scaleFactor
@@ -150,7 +155,14 @@ class Draw (QWidget):
 		painter.drawText(int(x3)+5, int(y3)+12, "C")
 	
 	def wheelEvent(self, event):
-		self.scaleFactor *= (1.001 ** event.angleDelta().y())
+		factor=1.001 ** event.angleDelta().y()
+		if self.scaleFactor*factor/self.origScaleFactor>10:
+			return
+		self.scaleFactor *= factor
+		x0=event.position().x()-self.offsetX
+		y0=event.position().y()-self.offsetY
+		self.offsetX=event.position().x()-x0*factor
+		self.offsetY=event.position().y()-y0*factor
 		self.repaint()
 
 	def toggleMedians (self, checked):
@@ -163,6 +175,19 @@ class Draw (QWidget):
 		
 	def toggleBisectors (self, checked):
 		self.showBisectors=checked
+		self.repaint()
+		
+	def mousePressEvent (self, event):
+		self.mousePressed=True
+		self.mouseStartPosition=event.position()
+		
+	def mouseReleaseEvent (self, event):
+		self.mousePressed=False
+		
+	def mouseMoveEvent (self, event):
+		self.offsetX+=event.position().x()-self.mouseStartPosition.x()
+		self.offsetY+=event.position().y()-self.mouseStartPosition.y()
+		self.mouseStartPosition=event.position()
 		self.repaint()
 		
 class Window (QWidget):
