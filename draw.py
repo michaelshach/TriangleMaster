@@ -202,30 +202,32 @@ class Window (QWidget):
 		draw=Draw (t)
 		hLayout.addWidget(draw, 2)
 
-		text='<h3>Стороны</h3>'
+		text='<h3 style="margin-bottom: 0">Стороны</h3>'
 		text+=f'AB = {t.c:.1f}<br>'
 		text+=f'AC = {t.b:.1f}<br>'
 		text+=f'BC = {t.a:.1f}'
-		text+='<h3>Углы</h3>'
+		text+='<h3 style="margin-bottom: 0">Углы</h3>'
 		text+=f'∠A = {math.acos(t.cosA)/math.pi*180:.0f}°<br>'
 		text+=f'∠B = {math.acos(t.cosB)/math.pi*180:.0f}°<br>'
 		text+=f'∠C = {math.acos(t.cosC)/math.pi*180:.0f}°'
-		text+='<h3>Площадь и периметр</h3>'
+		text+='<h3 style="margin-bottom: 0">Площадь и периметр</h3>'
 		text+=f'S = {t.S:.3f}<br>'
 		text+=f'P = {t.a+t.b+t.c:.1f}'
-		text+='<h3>Медианы</h3>'
+		text+='<h3 style="margin-bottom: 0">Медианы</h3>'
 		text+=f'AA<sub>1</sub> = {dist(t.A,t.A1):.3f}<br>'
 		text+=f'BB<sub>1</sub> = {dist(t.B,t.B1):.3f}<br>'
 		text+=f'CC<sub>1</sub> = {dist(t.C,t.C1):.3f}'
-		text+='<h3>Высоты</h3>'
+		text+='<h3 style="margin-bottom: 0">Высоты</h3>'
 		text+=f'AA<sub>2</sub> = {dist(t.A,t.A2):.3f}<br>'
 		text+=f'BB<sub>2</sub> = {dist(t.B,t.B2):.3f}<br>'
 		text+=f'CC<sub>2</sub> = {dist(t.C,t.C2):.3f}'
-		text+='<h3>Биссектрисы</h3>'
+		text+='<h3 style="margin-bottom: 0">Биссектрисы</h3>'
 		text+=f'AA<sub>3</sub> = {dist(t.A,t.A3):.3f}<br>'
 		text+=f'BB<sub>3</sub> = {dist(t.B,t.B3):.3f}<br>'
 		text+=f'CC<sub>3</sub> = {dist(t.C,t.C3):.3f}'
 		label=QLabel(text,self)
+		font = QFont("Sans", 10)
+		label.setFont(font)
 		hLayout.addWidget(label, 1, Qt.AlignmentFlag.AlignTop)
 		mediansButton=QPushButton ('Показать медианы')
 		mediansButton.setCheckable (True)
