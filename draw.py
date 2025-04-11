@@ -1,7 +1,7 @@
 import math
 from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QPainter, QBrush, QPen, QColor, QTransform, QFont
-from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QMainWindow, QToolBar, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QMainWindow, QToolBar, QPushButton, QMessageBox
 
 def dist (p1,p2):
 	return math.sqrt ((p1.x()-p2.x())**2 + (p1.y()-p2.y())**2)
@@ -17,7 +17,8 @@ class Triangle:
 		self.sinA = sinA = math.sqrt (1-cosA*cosA)
 		self.cosB = cosB = (a*a+c*c-b*b)/(2*a*c)
 		self.sinB = sinB = math.sqrt (1-cosB*cosB)
-		self.cosC = (a*a+b*b-c*c)/(2*a*b)
+		self.cosC = cosC = (a*a+b*b-c*c)/(2*a*b)
+		self.sinC = math.sqrt (1-cosC*cosC)
 		self.p = p = (a+b+c)/2
 		self.S = S = math.sqrt(p*(p-a)*(p-b)*(p-c))
 
@@ -198,7 +199,7 @@ class Window (QWidget):
 		vLayout = QVBoxLayout(self)
 		hLayout = QHBoxLayout()
 		vLayout.addLayout(hLayout)
-		t = Triangle(b, c, cosA)
+		self.t = t = Triangle(b, c, cosA)
 		draw=Draw (t)
 		hLayout.addWidget(draw, 2)
 
@@ -238,11 +239,33 @@ class Window (QWidget):
 		bisectorsButton=QPushButton ('Показать биссектрисы')
 		bisectorsButton.setCheckable (True)
 		bisectorsButton.toggled.connect (draw.toggleBisectors)
+		anglesButton=QPushButton ('Показать тригоном. знач.')
+		anglesButton.clicked.connect (self.showAngles)
 		hLayout2=QHBoxLayout ()
 		hLayout2.addWidget(mediansButton)
 		hLayout2.addWidget(altitudesButton)
 		hLayout2.addWidget(bisectorsButton)
+		hLayout2.addWidget(anglesButton)
 		vLayout.addLayout (hLayout2)
+	
+	def showAngles (self):
+		t = self.t
+		text = f'∠A: sin = {t.sinA:.4f}, cos = {t.cosA:.4f}'
+		if t.cosA:
+			text += f', tg = {t.sinA/t.cosA:.4f}'
+		if t.sinA:
+			text += f', ctg = {t.cosA/t.sinA:.4f}'
+		text += f'\n∠B: sin = {t.sinB:.4f}, cos = {t.cosB:.4f}'
+		if t.cosB:
+			text += f', tg = {t.sinB/t.cosB:.4f}'
+		if t.sinB:
+			text += f', ctg = {t.cosB/t.sinB:.4f}'
+		text += f'\n∠C: sin = {t.sinC:.4f}, cos = {t.cosC:.4f}'
+		if t.cosC:
+			text += f', tg = {t.sinC/t.cosC:.4f}'
+		if t.sinC:
+			text += f', ctg = {t.cosC/t.sinC:.4f}'
+		QMessageBox.information(self, 'Вывод значений', text)
 
 if __name__ == '__main__':
 	app = QApplication([])
