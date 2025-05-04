@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout, QRadioButton, QWidget, QDoubleSpinBox, QApplication, QButtonGroup, QSizePolicy
+from PyQt6.QtWidgets import QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout, QRadioButton, QWidget, QDoubleSpinBox, QApplication, QButtonGroup, QSizePolicy, QMessageBox
 import sys
 import math
 from draw import Window
@@ -48,6 +48,9 @@ class Form (QWidget):
 			a=self.spinbox1.value()
 			b=self.spinbox2.value()
 			c=self.spinbox3.value()
+			if a+b<=c or a+c<=b or b+c<=a:
+				QMessageBox.warning(self, 'Ошибка', 'Нарушено неравенство треугольника')
+				return
 			cosA=(b*b+c*c-a*a)/(2*b*c)			
 		elif self.option2.isChecked():
 			b=self.spinbox1.value()
